@@ -1,0 +1,6 @@
+Metadata-Version: 2.4
+Name: AI-Tutor
+Version: 1.0
+Summary: A platform with multiple AI tutors specializing in different subjects.
+Requires-Dist: google-generativeai
+Requires-Dist: display

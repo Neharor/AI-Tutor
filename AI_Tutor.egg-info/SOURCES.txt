@@ -1,0 +1,7 @@
+README.md
+pyproject.toml
+AI_Tutor.egg-info/PKG-INFO
+AI_Tutor.egg-info/SOURCES.txt
+AI_Tutor.egg-info/dependency_links.txt
+AI_Tutor.egg-info/requires.txt
+AI_Tutor.egg-info/top_level.txt

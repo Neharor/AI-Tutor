@@ -1,0 +1,9 @@
+[project]
+name = "AI-Tutor"
+description = "A platform with multiple AI tutors specializing in different subjects."
+version = "1.00"
+
+dependencies = [
+    "google-generativeai",
+    "display"
+]
