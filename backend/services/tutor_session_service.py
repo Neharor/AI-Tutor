@@ -16,7 +16,7 @@ chat_sessions = {subject: TUTORS[subject].start_chat(history=[]) for subject in 
 next_message = {}
 next_image = {}
 
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg","pdf"}
 
 
 def allowed_file(filename):
