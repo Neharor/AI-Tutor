@@ -8,8 +8,6 @@ This repository contains a simple Python Flask App running with the Google AI Ge
 
 1. If you don’t have Python installed, install it [from Python.org](https://www.python.org/downloads/).
 
-2. [Clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) this repository.
-
 3. Create a new virtual environment:
 
    - macOS:
