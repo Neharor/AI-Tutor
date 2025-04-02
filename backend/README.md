@@ -2,26 +2,7 @@
 
 This repository contains a simple Python Flask App running with the Google AI Gemini API, designed to get you started building with Gemini's multi-modal capabilities. The app comes with a basic UI and a Flask backend.
 
-<img width="1271" alt="Screenshot 2024-05-07 at 7 42 28 AM" src="https://github.com/logankilpatrick/gemini-api-quickstart/assets/35577566/156ae3e0-cffa-47a3-8a71-1bded78c4632">
-
 ## Basic request
-
-To send your first API request with the [Gemini API Python SDK](https://github.com/google-gemini/generative-ai-python), make sure you have the right dependencies installed (see installation steps below) and then run the following code:
-
-```python
-import os
-import google.generativeai as genai
-
-genai.configure(api_key = os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel('gemini-1.5-flash')
-
-chat = model.start_chat(history=[])
-response = chat.send_message("In one sentence, explain how AI works to a child.")
-print(response.text)
-
-response = chat.send_message("Now explain it like I a Physics PhD student")
-print(response.text)
-```
 
 ## Setup
 
