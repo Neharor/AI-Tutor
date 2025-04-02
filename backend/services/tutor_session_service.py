@@ -16,7 +16,7 @@ chat_sessions = {subject: TUTORS[subject].start_chat(history=[]) for subject in 
 next_message = {}
 next_image = {}
 
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg","pdf"}
+ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "pdf"}
 
 
 def allowed_file(filename):
@@ -44,15 +44,30 @@ def upload_file(request):
     return jsonify(success=True, message="File uploaded", filename=filename)
 
 
+def classify_subject(question):
+    """Uses AI to determine the subject of a question."""
+    classification_model = genai.GenerativeModel("gemini-1.5-flash")
+    response = classification_model.generate_content(
+        f"Classify this question into one of the following subjects: Math, Science, or History. "
+        f"Only return the subject name: {question}"
+    )
+    return response.text.strip().lower()
+
+
 def chat(request):
     """Handles chat interaction with subject-specific AI tutors"""
     global next_message
     data = request.json
-    subject = data.get("subject", "general")
+    subject = data.get("subject", "general").lower()
     message = data.get("message", "")
 
     if subject not in TUTORS:
         return jsonify(success=False, message="Invalid subject")
+
+    predicted_subject = classify_subject(message)  # AI classifier
+
+    if predicted_subject != subject:
+        return jsonify(success=False, message=f"This question belongs to the {predicted_subject.capitalize()} tutor. Please switch subjects.")
 
     next_message[subject] = message
     return jsonify(success=True)
@@ -62,7 +77,7 @@ def stream(request):
     """Streams AI-generated tutoring responses"""
     def generate():
         global next_message, next_image
-        subject = request.args.get("subject", "general")
+        subject = request.args.get("subject", "general").lower()
 
         if subject not in chat_sessions:
             yield f"data: Invalid subject\n\n"

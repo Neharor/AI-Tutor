@@ -23,18 +23,28 @@ function TutorSession() {
     setResponse(""); 
     setStreaming(true);
 
-    await axios.post("http://127.0.0.1:5000/chat", { subject, message: question });
+    // First send the chat message to the backend to validate and receive initial response
+    const res = await axios.post("http://127.0.0.1:5000/chat", { subject, message: question });
 
-    const newEventSource = new EventSource(`http://127.0.0.1:5000/stream?subject=${subject}`);
-    setEventSource(newEventSource);
+    // If the response contains a validation message, display it immediately
+    setResponse(res.data.message);
 
-    newEventSource.onmessage = (event) => {
-      setResponse((prev) => prev + event.data);
-    };
-    newEventSource.onerror = () => {
-      newEventSource.close();
-      setStreaming(false);
-    };
+    // Only start streaming if the initial validation passed
+    if (res.data.success) {
+      const newEventSource = new EventSource(`http://127.0.0.1:5000/stream?subject=${subject}`);
+      setEventSource(newEventSource);
+
+      newEventSource.onmessage = (event) => {
+        setResponse((prev) => prev + event.data);  // Append streamed data
+      };
+
+      newEventSource.onerror = () => {
+        newEventSource.close();
+        setStreaming(false);
+      };
+    } else {
+      setStreaming(false);  // Stop streaming if the response was invalid
+    }
   };
 
   const handleFileUpload = async (e) => {
