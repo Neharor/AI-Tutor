@@ -42,7 +42,7 @@
     font-size: 1rem;
     resize: none;
     background: white;
-    color: #f4e36b;
+    color: black;
     margin-bottom: 15px;
   }
   
@@ -85,5 +85,6 @@
   .response-text {
     font-size: 1rem;
     word-wrap: break-word;
+    color:black
   }
   

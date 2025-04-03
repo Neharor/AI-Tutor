@@ -4,6 +4,7 @@ import NavBar from "./NavBar";
 import TutorSession from "./TutorSession/TutorSession";
 import StudentCard from "./StudentCard/StudentCard";
 import Quiz from "./Quiz/Quiz";
+import PeerLearning from "./PeerLearning/PeerLearning";
 import Home from "./Home/Home";
 import Instructor from "./Instructor/Instructor";
 
@@ -22,7 +23,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home/>} />
         <Route path="/instructor" element={<Instructor></Instructor>} />
-        <Route path="/peer-learning" element={<h1>Peer Learning Page</h1>} />
+        <Route path="/peer-learning" element={<PeerLearning></PeerLearning>} />
         {/* Pass studentData as a prop to StudentCard */}
         <Route path="/student-card" element={<StudentCard student={studentData} />} />
         <Route path="/quiz" element={<Quiz key={window.location.pathname} />} />
