@@ -6,7 +6,7 @@ function TutorSession() {
   const [subject, setSubject] = useState("math");
   const [question, setQuestion] = useState("");
   const [response, setResponse] = useState("");
-  const [image, setImage] = useState(null);
+  const [file, setFile] = useState(null); // Changed from image to file to handle both image and PDF
   const [streaming, setStreaming] = useState(false);
   const [eventSource, setEventSource] = useState(null);
 
@@ -18,8 +18,9 @@ function TutorSession() {
     };
   }, [eventSource]);
 
+  // Function to handle asking the tutor (including both file and message)
   const handleAskTutor = async () => {
-    if (!question && !image) return;
+    if (!question && !file) return;
     setResponse(""); 
     setStreaming(true);
 
@@ -47,14 +48,16 @@ function TutorSession() {
     }
   };
 
+  // Handle file upload (both images and PDFs)
   const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const uploadedFile = e.target.files[0];
+    if (!uploadedFile) return;
 
-    setImage(file);
+    setFile(uploadedFile);  // Store the file (image or PDF)
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", uploadedFile);
 
+    // Send the uploaded file to the backend
     await axios.post("http://127.0.0.1:5000/upload", formData);
   };
 
@@ -78,8 +81,13 @@ function TutorSession() {
         onChange={(e) => setQuestion(e.target.value)}
       />
 
-      {/* Upload Image */}
-      <input type="file" className="file-upload" accept="image/*" onChange={handleFileUpload} />
+      {/* Upload Image or PDF */}
+      <input
+        type="file"
+        className="file-upload"
+        accept="image/*, application/pdf" // Accept both image files and PDFs
+        onChange={handleFileUpload}
+      />
 
       {/* Ask Tutor Button */}
       <button className="ask-button" onClick={handleAskTutor} disabled={streaming}>
