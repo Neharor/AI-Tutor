@@ -149,3 +149,4 @@ def calculate_score(answers, correct_answers, quiz_data):
             score += 1  # Increment score for each correct answer
             
     return score
+

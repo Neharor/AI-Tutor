@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import "./Quiz.css";
 
@@ -15,31 +15,19 @@ const Quiz = () => {
 
   const location = useLocation();
 
-  // Reset quiz when user navigates to the Quiz page
-  useEffect(() => {
-    setIsQuizStarted(false);
-    setIsQuizCompleted(false);
-    setShowSubjectSelection(true);
-    setQuizQuestions([]); // Ensure fresh state
-    setUserAnswers([]);
-  }, [location.pathname]); // This will reset on every navigation
-
-  useEffect(() => {
-    if (isQuizStarted) {
-      fetchQuizQuestions();
-    }
-  }, [subject, isQuizStarted]);
-
-  const fetchQuizQuestions = async () => {
+  // Use useCallback to ensure that fetchQuizQuestions is stable
+  const fetchQuizQuestions = useCallback(async () => {
     setLoading(true);
+    setError("");
+
     try {
       const response = await fetch(`http://localhost:5000/quiz?subject=${subject}`);
       const data = await response.json();
 
-      if (data.success) {
+      if (data.success && Array.isArray(data.quiz) && data.quiz.length > 0) {
         setQuizQuestions(data.quiz);
         setUserAnswers(new Array(data.quiz.length).fill(""));
-        setError("");
+        setShowSubjectSelection(false); // Hide subject selection once quiz starts
       } else {
         setError("Failed to load quiz questions.");
       }
@@ -49,7 +37,22 @@ const Quiz = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [subject]); // Dependency on 'subject' so it updates when subject changes
+
+  useEffect(() => {
+    setIsQuizStarted(false);
+    setIsQuizCompleted(false);
+    setShowSubjectSelection(true);
+    setQuizQuestions([]);
+    setUserAnswers([]);
+    setError("");
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (isQuizStarted) {
+      fetchQuizQuestions();
+    }
+  }, [isQuizStarted, fetchQuizQuestions]); // Add 'fetchQuizQuestions' as a dependency
 
   const handleAnswerChange = (index, answer) => {
     const updatedAnswers = [...userAnswers];
@@ -58,12 +61,14 @@ const Quiz = () => {
   };
 
   const submitQuiz = async () => {
-    if (userAnswers.includes("")) {
+    if (userAnswers.includes("") || userAnswers.length !== quizQuestions.length) {
       setError("Please answer all questions before submitting.");
       return;
     }
 
     setLoading(true);
+    setError("");
+
     try {
       const response = await fetch("http://localhost:5000/quiz/submit", {
         method: "POST",
@@ -74,9 +79,8 @@ const Quiz = () => {
       const data = await response.json();
 
       if (data.success) {
-        setScore(data.score);  // Correctly use score here
+        setScore(data.score);
         setIsQuizCompleted(true);
-        setShowSubjectSelection(false);
       } else {
         setError(data.message || "Error submitting quiz.");
       }
@@ -88,38 +92,42 @@ const Quiz = () => {
     }
   };
 
-  const startNewQuiz = () => {
-    // Reset quiz state to show fresh start
-    setIsQuizStarted(false);
-    setIsQuizCompleted(false);
-    setShowSubjectSelection(true);
-    setQuizQuestions([]); // Clear previous questions
-    setUserAnswers([]); // Clear previous answers
+  const startQuiz = () => {
+    setIsQuizStarted(true);
+    setShowSubjectSelection(false);
   };
 
-  const goBackToSubjects = () => {
-    // Reset quiz state to show fresh start
+  const startNewQuiz = () => {
     setIsQuizStarted(false);
     setIsQuizCompleted(false);
     setShowSubjectSelection(true);
-    setQuizQuestions([]); // Clear previous questions
-    setUserAnswers([]); // Clear previous answers
+    setQuizQuestions([]);
+    setUserAnswers([]);
+    setError("");
   };
 
   return (
     <div className="quiz-container">
       <h1>Test Your Knowledge</h1>
 
-      {showSubjectSelection && (
+      {showSubjectSelection && !isQuizStarted && (
         <div className="subject-selection">
           <label>Select Subject:</label>
-          <select value={subject} onChange={(e) => setSubject(e.target.value)}>
+          <select
+            value={subject}
+            onChange={(e) => {
+              setSubject(e.target.value); // Ensure subject change triggers state updates
+              setIsQuizStarted(false); // Reset the quiz start state
+              setQuizQuestions([]); // Reset the quiz questions
+              setUserAnswers([]); // Reset the user's answers
+            }}
+          >
             <option value="math">Math</option>
             <option value="science">Science</option>
             <option value="history">History</option>
             <option value="general">General</option>
           </select>
-          <button className="start-button" onClick={() => setIsQuizStarted(true)}>
+          <button className="start-button" onClick={startQuiz}>
             Start Quiz
           </button>
         </div>
@@ -163,9 +171,6 @@ const Quiz = () => {
           <p>Thank you for participating!</p>
           <button onClick={startNewQuiz} className="retry-button">
             Retake Quiz
-          </button>
-          <button onClick={goBackToSubjects} className="back-button">
-            Back to Subjects
           </button>
         </div>
       )}
