@@ -38,7 +38,7 @@ const Quiz = () => {
       const response = await fetch(`http://localhost:5000/quiz?subject=${subject}`);
       const data = await response.json();
 
-      if (data.success) {
+      if (data.success && Array.isArray(data.quiz) && data.quiz.length > 0) {
         setQuizQuestions(data.quiz);
         setUserAnswers(new Array(data.quiz.length).fill(""));
         setShowSubjectSelection(false); // Hide subject selection once quiz starts
@@ -60,7 +60,7 @@ const Quiz = () => {
   };
 
   const submitQuiz = async () => {
-    if (userAnswers.includes("")) {
+    if (userAnswers.includes("") || userAnswers.length !== quizQuestions.length) {
       setError("Please answer all questions before submitting.");
       return;
     }
@@ -93,7 +93,7 @@ const Quiz = () => {
 
   const startQuiz = () => {
     setIsQuizStarted(true);
-    setShowSubjectSelection(false); // Ensure subject selection is hidden
+    setShowSubjectSelection(false);
   };
 
   const startNewQuiz = () => {
