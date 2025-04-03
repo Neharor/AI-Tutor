@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import "./Quiz.css";
 
@@ -15,22 +15,8 @@ const Quiz = () => {
 
   const location = useLocation();
 
-  useEffect(() => {
-    setIsQuizStarted(false);
-    setIsQuizCompleted(false);
-    setShowSubjectSelection(true);
-    setQuizQuestions([]);
-    setUserAnswers([]);
-    setError("");
-  }, [location.pathname]);
-
-  useEffect(() => {
-    if (isQuizStarted) {
-      fetchQuizQuestions();
-    }
-  }, [subject, isQuizStarted]);
-
-  const fetchQuizQuestions = async () => {
+  // Use useCallback to ensure that fetchQuizQuestions is stable
+  const fetchQuizQuestions = useCallback(async () => {
     setLoading(true);
     setError("");
 
@@ -51,7 +37,22 @@ const Quiz = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [subject]); // Dependency on 'subject' so it updates when subject changes
+
+  useEffect(() => {
+    setIsQuizStarted(false);
+    setIsQuizCompleted(false);
+    setShowSubjectSelection(true);
+    setQuizQuestions([]);
+    setUserAnswers([]);
+    setError("");
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (isQuizStarted) {
+      fetchQuizQuestions();
+    }
+  }, [isQuizStarted, fetchQuizQuestions]); // Add 'fetchQuizQuestions' as a dependency
 
   const handleAnswerChange = (index, answer) => {
     const updatedAnswers = [...userAnswers];
@@ -112,7 +113,15 @@ const Quiz = () => {
       {showSubjectSelection && !isQuizStarted && (
         <div className="subject-selection">
           <label>Select Subject:</label>
-          <select value={subject} onChange={(e) => setSubject(e.target.value)}>
+          <select
+            value={subject}
+            onChange={(e) => {
+              setSubject(e.target.value); // Ensure subject change triggers state updates
+              setIsQuizStarted(false); // Reset the quiz start state
+              setQuizQuestions([]); // Reset the quiz questions
+              setUserAnswers([]); // Reset the user's answers
+            }}
+          >
             <option value="math">Math</option>
             <option value="science">Science</option>
             <option value="history">History</option>
