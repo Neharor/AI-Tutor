@@ -15,14 +15,14 @@ const Quiz = () => {
 
   const location = useLocation();
 
-  // Reset quiz when user navigates to the Quiz page
   useEffect(() => {
     setIsQuizStarted(false);
     setIsQuizCompleted(false);
     setShowSubjectSelection(true);
-    setQuizQuestions([]); // Ensure fresh state
+    setQuizQuestions([]);
     setUserAnswers([]);
-  }, [location.pathname]); // This will reset on every navigation
+    setError("");
+  }, [location.pathname]);
 
   useEffect(() => {
     if (isQuizStarted) {
@@ -32,6 +32,8 @@ const Quiz = () => {
 
   const fetchQuizQuestions = async () => {
     setLoading(true);
+    setError("");
+
     try {
       const response = await fetch(`http://localhost:5000/quiz?subject=${subject}`);
       const data = await response.json();
@@ -39,7 +41,7 @@ const Quiz = () => {
       if (data.success) {
         setQuizQuestions(data.quiz);
         setUserAnswers(new Array(data.quiz.length).fill(""));
-        setError("");
+        setShowSubjectSelection(false); // Hide subject selection once quiz starts
       } else {
         setError("Failed to load quiz questions.");
       }
@@ -64,6 +66,8 @@ const Quiz = () => {
     }
 
     setLoading(true);
+    setError("");
+
     try {
       const response = await fetch("http://localhost:5000/quiz/submit", {
         method: "POST",
@@ -74,9 +78,8 @@ const Quiz = () => {
       const data = await response.json();
 
       if (data.success) {
-        setScore(data.score);  // Correctly use score here
+        setScore(data.score);
         setIsQuizCompleted(true);
-        setShowSubjectSelection(false);
       } else {
         setError(data.message || "Error submitting quiz.");
       }
@@ -88,29 +91,25 @@ const Quiz = () => {
     }
   };
 
-  const startNewQuiz = () => {
-    // Reset quiz state to show fresh start
-    setIsQuizStarted(false);
-    setIsQuizCompleted(false);
-    setShowSubjectSelection(true);
-    setQuizQuestions([]); // Clear previous questions
-    setUserAnswers([]); // Clear previous answers
+  const startQuiz = () => {
+    setIsQuizStarted(true);
+    setShowSubjectSelection(false); // Ensure subject selection is hidden
   };
 
-  const goBackToSubjects = () => {
-    // Reset quiz state to show fresh start
+  const startNewQuiz = () => {
     setIsQuizStarted(false);
     setIsQuizCompleted(false);
     setShowSubjectSelection(true);
-    setQuizQuestions([]); // Clear previous questions
-    setUserAnswers([]); // Clear previous answers
+    setQuizQuestions([]);
+    setUserAnswers([]);
+    setError("");
   };
 
   return (
     <div className="quiz-container">
       <h1>Test Your Knowledge</h1>
 
-      {showSubjectSelection && (
+      {showSubjectSelection && !isQuizStarted && (
         <div className="subject-selection">
           <label>Select Subject:</label>
           <select value={subject} onChange={(e) => setSubject(e.target.value)}>
@@ -119,7 +118,7 @@ const Quiz = () => {
             <option value="history">History</option>
             <option value="general">General</option>
           </select>
-          <button className="start-button" onClick={() => setIsQuizStarted(true)}>
+          <button className="start-button" onClick={startQuiz}>
             Start Quiz
           </button>
         </div>
@@ -163,9 +162,6 @@ const Quiz = () => {
           <p>Thank you for participating!</p>
           <button onClick={startNewQuiz} className="retry-button">
             Retake Quiz
-          </button>
-          <button onClick={goBackToSubjects} className="back-button">
-            Back to Subjects
           </button>
         </div>
       )}
